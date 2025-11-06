@@ -1,0 +1,744 @@
+# Enterprise RAG Deployment Template
+# Production-Ready Kubernetes Configuration
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: enterprise-rag
+  labels:
+    name: enterprise-rag
+    environment: production
+
+---
+# ConfigMap for application configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rag-config
+  namespace: enterprise-rag
+data:
+  application.yml: |
+    rag_system:
+      # Document Processing
+      document_processing:
+        docling:
+          max_file_size: "100MB"
+          timeout: 300
+          parallel_factor: 4
+          ocr_enabled: true
+
+        pii_detection:
+          enabled: true
+          anonymization_mode: "adaptive"
+          compliance_frameworks: ["GDPR", "HIPAA", "SOC2"]
+
+      # Vector Database
+      vector_database:
+        primary: "qdrant"
+        qdrant:
+          cluster_nodes:
+            - "qdrant-0.qdrant:6333"
+            - "qdrant-1.qdrant:6333"
+            - "qdrant-2.qdrant:6333"
+          collection: "enterprise_knowledge"
+          timeout: 10.0
+          prefer_grpc: true
+
+      # Retrieval System
+      retrieval:
+        hybrid_search:
+          bm25_weight: 0.3
+          dense_weight: 0.4
+          splade_weight: 0.3
+
+        reranking:
+          enabled: true
+          model: "BAAI/bge-reranker-large"
+          max_candidates: 100
+
+      # Generation System
+      generation:
+        vllm:
+          model: "qwen/Qwen2.5-14B-Instruct"
+          tensor_parallel_size: 4
+          max_model_len: 32768
+          gpu_memory_utilization: 0.9
+
+      # Security
+      security:
+        authentication:
+          mfa_required: true
+          session_timeout: 1800
+        authorization:
+          casbin_enabled: true
+          rbac_model: "/config/security/rbac_model.conf"
+
+      # Monitoring
+      monitoring:
+        ragas_enabled: true
+        opik_enabled: true
+        langfuse_enabled: true
+        prometheus_metrics: true
+
+---
+# Secret for sensitive configuration
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rag-secrets
+  namespace: enterprise-rag
+type: Opaque
+stringData:
+  # Database credentials
+  postgres-user: "rag_user"
+  postgres-password: "secure_password_here"
+
+  # API keys
+  openai-api-key: "your_openai_key_here"
+  opik-api-key: "your_opik_key_here"
+  langfuse-secret-key: "your_langfuse_secret_here"
+
+  # Security
+  jwt-secret: "your_jwt_secret_here"
+  encryption-key: "your_encryption_key_here"
+
+---
+# Qdrant StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: qdrant
+  namespace: enterprise-rag
+spec:
+  serviceName: qdrant
+  replicas: 3
+  selector:
+    matchLabels:
+      app: qdrant
+  template:
+    metadata:
+      labels:
+        app: qdrant
+    spec:
+      containers:
+      - name: qdrant
+        image: qdrant/qdrant:v1.6.1
+        ports:
+        - containerPort: 6333
+          name: http
+        - containerPort: 6334
+          name: grpc
+        - containerPort: 6335
+          name: p2p
+        env:
+        - name: QDRANT__CLUSTER__ENABLED
+          value: "true"
+        - name: QDRANT__CLUSTER__P2P__PORT
+          value: "6335"
+        resources:
+          requests:
+            memory: "16Gi"
+            cpu: "4"
+          limits:
+            memory: "32Gi"
+            cpu: "8"
+        volumeMounts:
+        - name: qdrant-storage
+          mountPath: /qdrant/storage
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 6333
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 6333
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: qdrant-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: fast-ssd
+      resources:
+        requests:
+          storage: 500Gi
+
+---
+# Qdrant Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant
+  namespace: enterprise-rag
+spec:
+  clusterIP: None
+  selector:
+    app: qdrant
+  ports:
+  - port: 6333
+    name: http
+  - port: 6334
+    name: grpc
+  - port: 6335
+    name: p2p
+
+---
+# PostgreSQL for metadata and audit logs
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql
+  namespace: enterprise-rag
+spec:
+  serviceName: postgresql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+      - name: postgresql
+        image: postgres:15
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: "enterprise_rag"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: rag-secrets
+              key: postgres-user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rag-secrets
+              key: postgres-password
+        resources:
+          requests:
+            memory: "8Gi"
+            cpu: "2"
+          limits:
+            memory: "16Gi"
+            cpu: "4"
+        volumeMounts:
+        - name: postgresql-storage
+          mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+  - metadata:
+      name: postgresql-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: fast-ssd
+      resources:
+        requests:
+          storage: 200Gi
+
+---
+# Redis Cluster for caching
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-cluster
+  namespace: enterprise-rag
+spec:
+  serviceName: redis-cluster
+  replicas: 6
+  selector:
+    matchLabels:
+      app: redis-cluster
+  template:
+    metadata:
+      labels:
+        app: redis-cluster
+    spec:
+      containers:
+      - name: redis
+        image: redis:7.0-alpine
+        ports:
+        - containerPort: 6379
+        - containerPort: 16379
+        command: ["redis-server"]
+        args:
+        - "/etc/redis/redis.conf"
+        - "--cluster-enabled"
+        - "yes"
+        - "--cluster-config-file"
+        - "/data/nodes.conf"
+        - "--cluster-node-timeout"
+        - "5000"
+        - "--appendonly"
+        - "yes"
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "1"
+          limits:
+            memory: "8Gi"
+            cpu: "2"
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data
+        - name: redis-config
+          mountPath: /etc/redis
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-config
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: fast-ssd
+      resources:
+        requests:
+          storage: 50Gi
+
+---
+# vLLM Generation Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-generation-service
+  namespace: enterprise-rag
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: vllm-generation
+  template:
+    metadata:
+      labels:
+        app: vllm-generation
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      containers:
+      - name: vllm-server
+        image: enterprise-rag/vllm-server:v1.0.0
+        ports:
+        - containerPort: 8000
+          name: api
+        - containerPort: 8080
+          name: metrics
+        env:
+        - name: MODEL_NAME
+          value: "qwen/Qwen2.5-14B-Instruct"
+        - name: TENSOR_PARALLEL_SIZE
+          value: "4"
+        - name: GPU_MEMORY_UTILIZATION
+          value: "0.9"
+        - name: MAX_MODEL_LEN
+          value: "32768"
+        resources:
+          requests:
+            nvidia.com/gpu: "4"
+            memory: "64Gi"
+            cpu: "16"
+          limits:
+            nvidia.com/gpu: "4"
+            memory: "128Gi"
+            cpu: "32"
+        volumeMounts:
+        - name: model-cache
+          mountPath: /models
+        - name: config
+          mountPath: /config
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 120
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /v1/models
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+      volumes:
+      - name: model-cache
+        persistentVolumeClaim:
+          claimName: model-cache-pvc
+      - name: config
+        configMap:
+          name: rag-config
+      nodeSelector:
+        instance-type: gpu-optimized
+        nvidia.com/gpu.memory: "80Gi"
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+
+---
+# Main RAG Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-service
+  namespace: enterprise-rag
+spec:
+  replicas: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: rag-service
+  template:
+    metadata:
+      labels:
+        app: rag-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      containers:
+      - name: rag-api
+        image: enterprise-rag/rag-service:v2.1.0
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: QDRANT_URL
+          value: "http://qdrant:6333"
+        - name: REDIS_URL
+          value: "redis://redis-cluster:6379"
+        - name: POSTGRES_URL
+          value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgresql:5432/enterprise_rag"
+        - name: VLLM_URL
+          value: "http://vllm-generation-service:8000"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: rag-secrets
+              key: postgres-user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rag-secrets
+              key: postgres-password
+        resources:
+          requests:
+            memory: "8Gi"
+            cpu: "4"
+          limits:
+            memory: "16Gi"
+            cpu: "8"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 5
+      volumes:
+      - name: config
+        configMap:
+          name: rag-config
+
+---
+# HPA for auto-scaling
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: rag-service-hpa
+  namespace: enterprise-rag
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: rag-service
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Pods
+    pods:
+      metric:
+        name: active_requests_per_pod
+      target:
+        type: AverageValue
+        averageValue: "50"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 25
+        periodSeconds: 60
+
+---
+# Ingress for external access
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rag-ingress
+  namespace: enterprise-rag
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "1000"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+  - hosts:
+    - rag-api.company.com
+    secretName: rag-tls-secret
+  rules:
+  - host: rag-api.company.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: rag-service
+            port:
+              number: 8080
+
+---
+# Monitoring: Prometheus ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: rag-service-monitor
+  namespace: enterprise-rag
+spec:
+  selector:
+    matchLabels:
+      app: rag-service
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+
+---
+# PodDisruptionBudget for high availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: rag-service-pdb
+  namespace: enterprise-rag
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: rag-service
+
+---
+# NetworkPolicy for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: rag-network-policy
+  namespace: enterprise-rag
+spec:
+  podSelector:
+    matchLabels:
+      app: rag-service
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8080
+  - from:
+    - podSelector:
+        matchLabels:
+          app: rag-service
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: qdrant
+    ports:
+    - protocol: TCP
+      port: 6333
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis-cluster
+    ports:
+    - protocol: TCP
+      port: 6379
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgresql
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          app: vllm-generation
+    ports:
+    - protocol: TCP
+      port: 8000
+
+---
+# Resource Quotas
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: enterprise-rag-quota
+  namespace: enterprise-rag
+spec:
+  hard:
+    requests.cpu: "200"
+    requests.memory: "800Gi"
+    requests.nvidia.com/gpu: "20"
+    limits.cpu: "400"
+    limits.memory: "1600Gi"
+    limits.nvidia.com/gpu: "20"
+    persistentvolumeclaims: "20"
+    pods: "100"
+    services: "20"
+
+---
+# LimitRange for default resource limits
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: enterprise-rag-limits
+  namespace: enterprise-rag
+spec:
+  limits:
+  - default:
+      memory: "4Gi"
+      cpu: "2"
+    defaultRequest:
+      memory: "2Gi"
+      cpu: "1"
+    type: Container
+  - max:
+      memory: "128Gi"
+      cpu: "32"
+      nvidia.com/gpu: "8"
+    min:
+      memory: "100Mi"
+      cpu: "100m"
+    type: Container
+
+---
+# RBAC for service accounts
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rag-service-account
+  namespace: enterprise-rag
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rag-cluster-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "endpoints"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods", "nodes"]
+  verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rag-cluster-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rag-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: rag-service-account
+  namespace: enterprise-rag
+
+---
+# Priority Classes for workload prioritization
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: rag-critical-priority
+value: 1000
+globalDefault: false
+description: "Critical RAG services that must not be evicted"
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: rag-high-priority
+value: 800
+globalDefault: false
+description: "High priority RAG services"
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: rag-normal-priority
+value: 500
+globalDefault: false
+description: "Normal priority RAG services"

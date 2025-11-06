@@ -1,0 +1,118 @@
+# Enterprise RAG System Requirements
+# Production-ready dependencies with pinned versions
+
+# Document Processing
+docling==1.2.0                    # IBM advanced document processing
+unstructured[all-docs]==0.11.0    # Fallback document parser
+pypdf==3.17.0                     # PDF processing utilities
+python-docx==1.1.0                # Word document processing
+beautifulsoup4==4.12.2            # HTML/XML parsing
+
+# Text Processing & NLP
+langchain-text-splitters==0.0.1   # Semantic text chunking
+spacy==3.7.2                      # NLP processing
+tiktoken==0.5.2                   # Token counting
+cleantext==1.1.4                  # Text cleaning utilities
+
+# Vector Databases & Search
+qdrant-client==1.6.0              # Primary vector database
+chromadb==0.4.18                  # Alternative vector DB
+pgvector==0.2.4                   # PostgreSQL vector extension
+faiss-cpu==1.7.4                  # Facebook similarity search
+
+# Embeddings & Retrieval
+sentence-transformers==2.2.2      # Semantic embeddings
+rank-bm25==0.2.2                  # Sparse retrieval
+transformers==4.35.0              # Hugging Face transformers
+
+# RAG Frameworks
+llama-index==0.9.20               # Primary RAG framework
+haystack-ai==2.0.0                # Enterprise RAG framework
+langchain==0.1.0                  # Legacy support
+langchain-community==0.0.10       # Community integrations
+
+# Multi-Agent & Workflows
+langgraph==0.0.40                 # Advanced workflow engine
+crewai==0.22.0                    # Collaborative agents
+
+# LLM Serving
+vllm==0.2.0                       # Production LLM serving
+ollama==0.1.26                    # Development LLM serving
+
+# Advanced RAG Methods
+graphrag==0.1.0                   # Microsoft GraphRAG
+
+# Evaluation & Monitoring
+ragas==0.1.0                      # RAG evaluation metrics
+opik==0.1.0                       # Enterprise observability
+langfuse==2.0.0                   # Open-source monitoring
+trulens-eval==0.20.0              # LLM evaluation framework
+
+# Security & Privacy
+presidio-analyzer==2.2.33         # PII detection
+presidio-anonymizer==2.2.33       # Data anonymization
+casbin==1.17.0                    # Authorization engine
+pyjwt==2.8.0                      # JWT token handling
+cryptography==41.0.7              # Encryption utilities
+
+# Data Processing
+pandas==2.1.4                     # Data manipulation
+numpy==1.25.2                     # Numerical computing
+sqlalchemy==2.0.23                # Database ORM
+psycopg2-binary==2.9.9            # PostgreSQL adapter
+
+# Caching & Performance
+redis==5.0.1                      # Caching layer
+asyncio-redis==0.16.0             # Async Redis client
+uvloop==0.19.0                    # High-performance event loop
+
+# Monitoring & Observability
+prometheus-client==0.19.0         # Metrics collection
+opentelemetry-api==1.21.0         # Distributed tracing
+opentelemetry-sdk==1.21.0         # Tracing SDK
+structlog==23.2.0                 # Structured logging
+
+# API & Web Framework
+fastapi==0.104.1                  # Modern web framework
+uvicorn[standard]==0.24.0         # ASGI server
+pydantic==2.5.0                   # Data validation
+httpx==0.25.2                     # HTTP client
+
+# Testing & Quality
+pytest==7.4.3                     # Testing framework
+pytest-asyncio==0.21.1            # Async testing
+pytest-cov==4.1.0                 # Coverage reporting
+black==23.11.0                    # Code formatting
+isort==5.12.0                     # Import sorting
+mypy==1.7.1                       # Type checking
+pre-commit==3.6.0                 # Git hooks
+
+# Development Tools
+jupyter==1.0.0                    # Notebooks for exploration
+ipython==8.17.2                   # Enhanced Python shell
+rich==13.7.0                      # Terminal formatting
+click==8.1.7                      # CLI framework
+
+# Deployment & Infrastructure
+kubernetes==27.2.0                # Kubernetes client
+docker==6.1.3                     # Docker SDK
+boto3==1.34.0                     # AWS SDK (for S3 storage)
+azure-storage-blob==12.19.0       # Azure storage
+google-cloud-storage==2.10.0      # GCP storage
+
+# Performance & Optimization
+psutil==5.9.6                     # System monitoring
+nvidia-ml-py==12.535.133          # GPU monitoring
+py-spy==0.3.14                    # Performance profiling
+
+# Data Visualization (for dashboards)
+streamlit==1.28.2                 # Dashboard framework
+plotly==5.17.0                    # Interactive charts
+matplotlib==3.8.2                 # Basic plotting
+seaborn==0.13.0                   # Statistical visualization
+
+# Enterprise Integrations
+ldap3==2.9.1                      # LDAP authentication
+pysaml2==7.4.2                    # SAML SSO
+confluent-kafka==2.3.0            # Kafka messaging
+celery==5.3.4                     # Task queue

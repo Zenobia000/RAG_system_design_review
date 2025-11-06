@@ -1,0 +1,268 @@
+# Enterprise RAG Quick Start Configuration
+# Development and testing configuration
+
+# System metadata
+system:
+  name: "Enterprise RAG System"
+  version: "1.0.0"
+  environment: "development"
+  deployment_date: "2025-01-06"
+
+# Document processing configuration
+document_processing:
+  # Docling settings
+  docling:
+    max_file_size: "50MB"          # Smaller for development
+    timeout: 120                   # 2 minutes
+    parallel_factor: 2             # Fewer parallel processes
+    ocr_enabled: true
+    table_extraction: true
+
+  # Text chunking
+  chunk_size: 1000
+  chunk_overlap: 200
+  max_chunks_per_document: 100
+
+  # PII protection
+  pii_detection:
+    enabled: true
+    auto_anonymize: false          # Manual review in development
+    detection_threshold: 0.8
+
+# Vector database configuration
+vector_database:
+  provider: "qdrant"
+
+  qdrant:
+    host: "localhost"              # Local development
+    port: 6333
+    collection_name: "dev_enterprise_knowledge"
+    prefer_grpc: false             # HTTP for simplicity
+    timeout: 30.0
+
+    # Development collection settings
+    vector_size: 1024              # BGE-large embeddings
+    distance: "cosine"
+    hnsw_m: 32                     # Lower for development
+    hnsw_ef_construct: 128
+
+# Embeddings configuration
+embeddings:
+  primary_model: "BAAI/bge-large-zh-v1.5"
+  fallback_model: "sentence-transformers/all-MiniLM-L6-v2"
+  use_gpu: true
+  batch_size: 16
+  normalize_embeddings: true
+
+# LLM configuration
+llm:
+  provider: "ollama"
+  model: "qwen2.5:7b"              # Lighter model for development
+  base_url: "http://localhost:11434"
+  temperature: 0.1
+  max_tokens: 2048
+  top_p: 0.9
+
+# Retrieval configuration
+retrieval:
+  # Hybrid search settings
+  top_k: 20                        # Initial retrieval
+  rerank_top_k: 10                 # After reranking
+  similarity_threshold: 0.3
+
+  # Search strategy weights
+  bm25_weight: 0.3
+  dense_weight: 0.5
+  splade_weight: 0.2
+
+  # Reranking
+  reranking:
+    enabled: true
+    model: "BAAI/bge-reranker-base"  # Smaller model for dev
+    batch_size: 8
+
+# Generation configuration
+generation:
+  # Response templates
+  default_template: "general_inquiry"
+
+  templates:
+    general_inquiry:
+      max_sources: 8
+      require_citations: true
+      response_structure: "answer|sources"
+
+    technical_qa:
+      max_sources: 12
+      require_citations: true
+      response_structure: "direct_answer|detailed_explanation|limitations"
+
+  # Safety settings
+  safety:
+    content_filtering: true
+    hallucination_detection: true
+    citation_validation: true
+
+# Security configuration
+security:
+  # Authentication (simplified for development)
+  authentication:
+    enabled: true
+    mfa_required: false            # Disabled for development
+    session_timeout: 3600          # 1 hour
+
+  # Authorization
+  authorization:
+    enabled: true
+    rbac_model: "configs/security/dev_rbac_model.conf"
+    rbac_policy: "configs/security/dev_rbac_policy.csv"
+
+  # Rate limiting
+  rate_limiting:
+    enabled: true
+    max_requests_per_minute: 100   # Higher for development
+    max_requests_per_hour: 1000
+
+# Caching configuration
+caching:
+  enabled: true
+  provider: "redis"
+
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: ""                   # No password for development
+
+  # Cache policies
+  query_ttl: 1800                  # 30 minutes
+  embedding_ttl: 86400             # 24 hours
+  document_ttl: 3600               # 1 hour
+
+# Monitoring configuration
+monitoring:
+  # Evaluation
+  ragas_enabled: true
+  opik_enabled: false              # Disable for development
+  langfuse_enabled: false          # Disable for development
+
+  # Metrics
+  prometheus_metrics: false        # Disable for development
+  detailed_logging: true
+
+  # Evaluation settings
+  evaluation:
+    auto_evaluate: false           # Manual evaluation in development
+    evaluation_sample_size: 50
+    evaluation_frequency: "weekly"
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "structured"
+  file_path: "logs/rag_system.log"
+  max_file_size: "100MB"
+  backup_count: 5
+
+  # Log categories
+  categories:
+    query_execution: true
+    security_events: true
+    performance_metrics: true
+    error_tracking: true
+
+# Development helpers
+development:
+  # Auto-reload on code changes
+  auto_reload: true
+
+  # Sample data
+  sample_documents: "sample_documents/"
+  sample_queries: "test_data/sample_queries.json"
+
+  # Debug settings
+  debug_mode: true
+  verbose_errors: true
+  trace_execution: false
+
+  # Performance profiling
+  profiling:
+    enabled: false
+    output_dir: "profiling_results/"
+
+# Production readiness checklist
+production_readiness:
+  required_checks:
+    - "security_configuration_reviewed"
+    - "performance_benchmarks_completed"
+    - "backup_strategy_implemented"
+    - "monitoring_configured"
+    - "disaster_recovery_tested"
+    - "compliance_validation_passed"
+
+  optional_enhancements:
+    - "multi_region_deployment"
+    - "advanced_caching_strategy"
+    - "custom_model_fine_tuning"
+    - "specialized_domain_models"
+
+# Resource requirements (for development)
+resources:
+  minimum:
+    cpu_cores: 4
+    memory_gb: 16
+    gpu_memory_gb: 8
+    storage_gb: 100
+
+  recommended:
+    cpu_cores: 8
+    memory_gb: 32
+    gpu_memory_gb: 16
+    storage_gb: 500
+
+# API configuration
+api:
+  host: "0.0.0.0"
+  port: 8080
+  workers: 4
+  max_request_size: "50MB"
+  timeout: 300
+
+  # CORS settings
+  cors:
+    enabled: true
+    allowed_origins: ["http://localhost:3000", "http://localhost:8080"]
+    allowed_methods: ["GET", "POST"]
+    allowed_headers: ["*"]
+
+# Database configuration (for metadata storage)
+database:
+  # PostgreSQL for metadata
+  postgresql:
+    host: "localhost"
+    port: 5432
+    database: "enterprise_rag_dev"
+    pool_size: 10
+    max_overflow: 20
+    echo: false                    # Set to true for SQL debugging
+
+# Feature flags
+features:
+  # Experimental features
+  graph_rag: false                 # Disable advanced features in development
+  multi_agent_workflows: false
+  advanced_analytics: false
+
+  # Stable features
+  hybrid_retrieval: true
+  citation_generation: true
+  pii_detection: true
+  access_control: true
+  performance_monitoring: true
+
+# Backup and disaster recovery
+backup:
+  enabled: false                   # Disable for development
+  schedule: "0 2 * * *"           # Daily at 2 AM
+  retention_days: 30
+  storage_location: "local"
