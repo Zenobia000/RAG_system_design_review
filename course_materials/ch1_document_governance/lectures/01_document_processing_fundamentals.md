@@ -46,59 +46,66 @@ from docling.document_converter import DocumentConverter
 from pathlib import Path
 
 def process_enterprise_doc(file_path: str) -> dict:
-    """處理企業文檔的最簡實現"""
+    """處理企業文檔 - 30秒學會版本"""
 
     converter = DocumentConverter()
 
     try:
-        # 轉換文檔
+        # 就這麼簡單：丟進去，拿結果
         result = converter.convert(file_path)
-
-        # 提取純文本 (Markdown格式，保留結構)
         content = result.document.export_to_markdown()
 
-        # 基本統計
-        stats = {
-            "char_count": len(content),
-            "word_count": len(content.split()),
-            "has_tables": "|" in content,
-            "has_headers": "#" in content
-        }
-
+        # 別搞複雜統計，有用的就這幾個
         return {
             "success": True,
             "content": content,
-            "stats": stats,
+            "word_count": len(content.split()),
+            "looks_good": len(content) > 100,  # 太短通常是廢料
             "file_path": file_path
         }
 
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e),
-            "file_path": file_path
-        }
+        # 失敗就失敗，別隱藏錯誤
+        print(f"💥 處理失敗: {file_path} - {str(e)}")
+        return {"success": False, "error": str(e), "file_path": file_path}
 
-# 批量處理
-def process_document_folder(folder_path: str) -> list:
-    """批量處理文檔文件夾"""
+# 批量處理 - 簡單暴力有效
+def process_document_folder(folder_path: str) -> dict:
+    """批量處理文檔 - Linus風格：簡單粗暴有效"""
 
-    results = []
-    folder = Path(folder_path)
+    from pathlib import Path
+    import time
 
-    # 支援的格式
-    supported_formats = {'.pdf', '.docx', '.pptx', '.md', '.txt'}
+    print(f"🚀 開始處理: {folder_path}")
+    start_time = time.time()
 
-    for file_path in folder.rglob('*'):
-        if file_path.suffix.lower() in supported_formats:
-            result = process_enterprise_doc(str(file_path))
-            results.append(result)
+    # 找文件：支援常見格式就夠了
+    supported = {'.pdf', '.docx', '.pptx', '.md', '.txt'}
+    files = [f for f in Path(folder_path).rglob('*')
+             if f.suffix.lower() in supported]
 
-            # 簡單進度顯示
-            status = "✅" if result["success"] else "❌"
-            print(f"{status} {file_path.name}")
+    print(f"📄 找到 {len(files)} 個文件")
 
-    return results
+    # 處理文件：別並行，簡單循環就好
+    successful = []
+    failed = []
+
+    for file_path in files:
+        result = process_enterprise_doc(str(file_path))
+
+        if result["success"] and result["looks_good"]:
+            successful.append(result)
+            print(f"✅ {file_path.name}")
+        else:
+            failed.append(result)
+            print(f"❌ {file_path.name}")
+
+    elapsed = time.time() - start_time
+    print(f"⏱️ 完成! {len(successful)}/{len(files)} 成功，耗時 {elapsed:.1f}秒")
+
+    return {"successful": successful, "failed": failed, "stats": {
+        "total": len(files), "success_rate": len(successful)/len(files)*100
+    }}
 ```
 
 ### 1.2 文檔分塊：別想太複雜
@@ -110,39 +117,41 @@ def process_document_folder(folder_path: str) -> list:
 ```python
 from langchain.text_splitters import RecursiveCharacterTextSplitter
 
-def smart_chunk_document(content: str, doc_type: str = "general") -> list:
-    """實用的文檔分塊策略"""
+def chunk_document(content: str) -> list:
+    """文檔分塊 - 一個配置搞定所有場景"""
 
-    # 不同類型文檔的分塊參數
-    chunk_configs = {
-        "technical": {"size": 800, "overlap": 100},   # 技術文檔要精確
-        "policy": {"size": 1200, "overlap": 200},     # 政策文檔要完整
-        "general": {"size": 1000, "overlap": 150}     # 一般文檔平衡
-    }
+    from langchain.text_splitters import RecursiveCharacterTextSplitter
 
-    config = chunk_configs.get(doc_type, chunk_configs["general"])
-
+    # 別搞複雜配置，一個參數組合應付80%場景
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=config["size"],
-        chunk_overlap=config["overlap"],
-        length_function=len,
-        separators=["\n\n", "\n", "。", ".", " "]  # 中英文都考慮
+        chunk_size=1000,        # 1000字符，經驗最佳值
+        chunk_overlap=200,      # 20%重疊，防止切斷關鍵信息
+        separators=["\n\n", "\n", "。", ".", " "]
     )
 
     chunks = splitter.split_text(content)
 
-    # 添加基本元數據
-    chunk_data = []
-    for i, chunk in enumerate(chunks):
-        chunk_data.append({
-            "id": f"chunk_{i}",
-            "text": chunk,
-            "char_count": len(chunk),
-            "word_count": len(chunk.split()),
-            "chunk_index": i
-        })
+    # 簡單包裝，別搞太多元數據
+    return [{"text": chunk, "index": i} for i, chunk in enumerate(chunks)]
 
-    return chunk_data
+# 測試你的分塊效果
+def test_chunking_quality(content: str) -> None:
+    """快速測試分塊品質"""
+
+    chunks = chunk_document(content)
+
+    print(f"📊 分塊統計:")
+    print(f"  原文: {len(content)} 字符")
+    print(f"  分塊: {len(chunks)} 個")
+    print(f"  平均: {len(content)//len(chunks)} 字符/塊")
+    print(f"  最短: {min(len(c['text']) for c in chunks)}")
+    print(f"  最長: {max(len(c['text']) for c in chunks)}")
+
+    # 看看分塊邊界是否合理
+    if len(chunks) > 1:
+        print(f"📋 分塊示例:")
+        print(f"  第1塊末尾: ...{chunks[0]['text'][-50:]}")
+        print(f"  第2塊開頭: {chunks[1]['text'][:50]}...")
 
 # 測試效果
 def test_chunking():
@@ -182,36 +191,55 @@ from datetime import datetime
 from typing import Optional, List
 import hashlib
 
-@dataclass
-class SimpleDocumentMetadata:
-    """簡單實用的文檔元數據"""
+def extract_metadata(file_path: str, content: str) -> dict:
+    """提取文檔元數據 - 實用版本，別搞複雜的類定義"""
 
-    # 基本標識 (必需)
-    doc_id: str
-    title: str
-    file_path: str
-    content_hash: str  # 用於檢測變更
+    import os
+    import hashlib
+    from pathlib import Path
 
-    # 分類信息 (重要)
-    document_type: str  # "manual", "policy", "tech_spec", "general"
-    department: str     # "engineering", "legal", "hr", "general"
+    # 基本信息：必須有的
+    doc_id = hashlib.md5(file_path.encode()).hexdigest()[:12]  # 短點就夠
+    title = Path(file_path).stem.replace('_', ' ').replace('-', ' ')
 
-    # 時間信息 (關鍵)
-    created_at: datetime
-    modified_at: datetime
-    processed_at: datetime
+    # 從路徑猜測部門和類型 - 簡單粗暴但有效
+    path_lower = file_path.lower()
 
-    # 權限信息 (安全)
-    access_level: str = "internal"  # "public", "internal", "confidential"
-    owner: str = "unknown"
+    if any(x in path_lower for x in ['eng', 'tech', 'dev']):
+        department = 'engineering'
+    elif any(x in path_lower for x in ['legal', 'compliance']):
+        department = 'legal'
+    elif any(x in path_lower for x in ['hr', 'people']):
+        department = 'hr'
+    else:
+        department = 'general'
 
-    # 內容統計 (有用)
-    word_count: int = 0
-    chunk_count: int = 0
+    if any(x in path_lower for x in ['manual', 'guide', 'howto']):
+        doc_type = 'manual'
+    elif any(x in path_lower for x in ['policy', 'procedure', 'rule']):
+        doc_type = 'policy'
+    elif any(x in path_lower for x in ['spec', 'design', 'api']):
+        doc_type = 'tech_spec'
+    else:
+        doc_type = 'general'
 
-    # 可選信息
-    keywords: List[str] = None
-    related_docs: List[str] = None
+    # 時間信息
+    try:
+        stat = os.stat(file_path)
+        modified = datetime.fromtimestamp(stat.st_mtime)
+    except:
+        modified = datetime.now()
+
+    return {
+        'id': doc_id,
+        'title': title,
+        'file_path': file_path,
+        'department': department,
+        'type': doc_type,
+        'modified': modified,
+        'word_count': len(content.split()),
+        'is_old': (datetime.now() - modified).days > 365  # 超過1年算舊
+    }
 
 def extract_simple_metadata(file_path: str, content: str) -> SimpleDocumentMetadata:
     """提取簡單實用的元數據"""
@@ -294,50 +322,33 @@ def extract_simple_keywords(content: str, max_keywords: int = 10) -> List[str]:
 **忘掉複雜的品質模型！** 實際上只需要檢查幾個關鍵點：
 
 ```python
-def simple_quality_check(content: str, metadata: SimpleDocumentMetadata) -> dict:
-    """簡單實用的品質檢查"""
+def quality_check(content: str, metadata: dict) -> dict:
+    """文檔品質檢查 - 實用版本，只檢查會出事的問題"""
 
     issues = []
-    score = 1.0  # 從滿分開始扣分
 
-    # 1. 內容長度檢查
-    if len(content) < 100:
-        issues.append("內容太短，可能是空文檔")
-        score -= 0.3
-    elif len(content) > 100000:
-        issues.append("內容太長，可能需要拆分")
-        score -= 0.1
+    # 1. 明顯的問題
+    if len(content) < 50:
+        return {"usable": False, "issue": "文檔太短，可能是空的"}
 
-    # 2. 亂碼檢查
-    non_printable_ratio = sum(1 for c in content if not c.isprintable()) / len(content)
-    if non_printable_ratio > 0.1:
-        issues.append("可能包含亂碼或二進位數據")
-        score -= 0.4
+    # 2. 亂碼檢查 - 這個會搞壞 RAG
+    weird_chars = sum(1 for c in content[:1000] if not c.isprintable() and c not in '\n\t')
+    if weird_chars > 50:  # 前1000字符有50個以上奇怪字符
+        return {"usable": False, "issue": "可能有亂碼"}
 
-    # 3. 重複內容檢查
-    lines = content.split('\n')
-    unique_lines = set(line.strip() for line in lines if line.strip())
-    if len(unique_lines) < len(lines) * 0.5:
-        issues.append("重複內容過多")
-        score -= 0.2
+    # 3. 重複垃圾檢查
+    lines = [line.strip() for line in content.split('\n') if line.strip()]
+    if len(set(lines)) < len(lines) * 0.3:  # 70%以上重複行
+        return {"usable": False, "issue": "重複內容太多"}
 
-    # 4. 結構完整性檢查
-    if metadata.document_type == "manual" and not any(word in content.lower()
-                                                     for word in ["步驟", "操作", "step", "procedure"]):
-        issues.append("手冊類文檔缺少操作步驟")
-        score -= 0.2
-
-    # 5. 時效性檢查 (超過2年的文檔要小心)
-    doc_age_days = (datetime.now() - metadata.modified_at).days
-    if doc_age_days > 730:  # 2年
-        issues.append(f"文檔已有 {doc_age_days} 天未更新，可能過時")
-        score -= min(0.3, (doc_age_days - 730) / 365 * 0.1)
+    # 4. 時效性警告
+    if metadata.get('is_old', False):
+        issues.append("文檔可能已過時")
 
     return {
-        "quality_score": max(0.0, score),
-        "grade": "A" if score >= 0.9 else "B" if score >= 0.7 else "C" if score >= 0.5 else "F",
+        "usable": True,
         "issues": issues,
-        "usable": score >= 0.5  # 低於50%就別用了
+        "warning_count": len(issues)
     }
 ```
 
@@ -354,17 +365,16 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 
 class DocumentProcessor:
-    """實用的文檔處理器"""
+    """文檔處理器 - Linus風格：簡單配置，專注核心功能"""
 
     def __init__(self):
+        from docling.document_converter import DocumentConverter
         self.converter = DocumentConverter()
 
-        # 簡單配置，別搞太複雜
-        self.config = {
-            "max_file_size_mb": 50,  # 50MB以上的文件別處理了
-            "timeout_seconds": 60,   # 1分鐘處理不完就放棄
-            "supported_formats": {".pdf", ".docx", ".pptx", ".md", ".txt"}
-        }
+        # 配置：簡單明確，別搞一堆選項
+        self.max_size_mb = 50     # 大文件直接跳過
+        self.timeout = 60         # 60秒搞不定就算了
+        self.formats = {".pdf", ".docx", ".pptx", ".md", ".txt"}
 
     def process_folder(self, folder_path: str) -> Dict:
         """處理文檔文件夾"""
@@ -479,43 +489,64 @@ def setup_simple_pii_detector():
 
     return analyzer, anonymizer, pii_types
 
-def check_document_pii(content: str) -> Dict:
-    """檢查文檔中的個人信息"""
+def check_for_sensitive_info(content: str) -> dict:
+    """檢查敏感信息 - 簡化版，抓主要風險就夠了"""
 
-    analyzer, anonymizer, pii_types = setup_simple_pii_detector()
+    # 簡單正則表達式檢測常見敏感信息
+    import re
 
-    # 檢測 PII
-    results = analyzer.analyze(
-        text=content,
-        language="en",  # 主要支援英文，中文支援有限
-        entities=pii_types
-    )
+    patterns = {
+        "email": r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
+        "phone": r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b',
+        "ssn": r'\b\d{3}-\d{2}-\d{4}\b',
+        "credit_card": r'\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b'
+    }
 
-    if not results:
-        return {
-            "has_pii": False,
-            "risk_level": "safe",
-            "detected_types": []
-        }
+    detected = {}
+    for pii_type, pattern in patterns.items():
+        matches = re.findall(pattern, content)
+        if matches:
+            detected[pii_type] = len(matches)
 
-    # 風險評級：簡單粗暴
-    high_risk_types = {"CREDIT_CARD", "US_SSN"}
-    detected_types = [r.entity_type for r in results]
-
-    if any(pii_type in high_risk_types for pii_type in detected_types):
-        risk_level = "high"
-    elif len(detected_types) >= 3:
-        risk_level = "medium"
+    # 簡單風險評估
+    if "credit_card" in detected or "ssn" in detected:
+        risk = "high"
+    elif len(detected) >= 2:
+        risk = "medium"
+    elif detected:
+        risk = "low"
     else:
-        risk_level = "low"
+        risk = "safe"
 
     return {
-        "has_pii": True,
-        "risk_level": risk_level,
-        "detected_types": detected_types,
-        "detection_count": len(results),
-        "needs_anonymization": risk_level in ["high", "medium"]
+        "has_sensitive_info": bool(detected),
+        "risk_level": risk,
+        "detected_types": list(detected.keys()),
+        "total_matches": sum(detected.values()),
+        "action": "anonymize" if risk in ["high", "medium"] else "proceed"
     }
+
+def simple_anonymize(content: str, sensitive_check: dict) -> str:
+    """簡單匿名化 - 直接替換，別搞複雜算法"""
+
+    if not sensitive_check["has_sensitive_info"]:
+        return content
+
+    import re
+
+    # 暴力替換法：簡單有效
+    replacements = {
+        r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b': '[EMAIL]',
+        r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b': '[PHONE]',
+        r'\b\d{3}-\d{2}-\d{4}\b': '[SSN]',
+        r'\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b': '[CARD]'
+    }
+
+    anonymized = content
+    for pattern, replacement in replacements.items():
+        anonymized = re.sub(pattern, replacement, anonymized)
+
+    return anonymized
 
 def anonymize_if_needed(content: str, pii_check: Dict) -> str:
     """必要時進行匿名化"""
@@ -551,70 +582,77 @@ def anonymize_if_needed(content: str, pii_check: Dict) -> str:
 ### 5.1 30分鐘搭建文檔處理系統
 
 ```python
-# main.py - 完整的文檔處理腳本
-import sys
-from pathlib import Path
+# 完整的文檔處理腳本 - 拿來就用
+def process_all_documents(folder_path: str) -> str:
+    """一個函數搞定所有文檔處理"""
 
-def main():
-    """主處理函數"""
+    import json
+    import time
+    from pathlib import Path
 
-    if len(sys.argv) < 2:
-        print("用法: python main.py <文檔文件夾路徑>")
-        return
+    print(f"🚀 開始處理企業文檔: {folder_path}")
 
-    folder_path = sys.argv[1]
+    # 1. 批量處理
+    results = process_document_folder(folder_path)
+    successful_docs = results["successful"]
 
-    if not os.path.exists(folder_path):
-        print(f"❌ 文件夾不存在: {folder_path}")
-        return
+    # 2. 處理每個成功的文檔
+    final_docs = []
+    for doc in successful_docs:
+        # 提取元數據
+        metadata = extract_metadata(doc["file_path"], doc["content"])
 
-    # 1. 初始化處理器
-    processor = DocumentProcessor()
+        # 品質檢查
+        quality = quality_check(doc["content"], metadata)
 
-    # 2. 批量處理
-    results = processor.process_folder(folder_path)
+        if quality["usable"]:
+            # PII 檢查
+            pii_check = check_for_sensitive_info(doc["content"])
 
-    # 3. 過濾可用文檔
-    usable_docs = [doc for doc in results["successful_docs"] if doc["usable"]]
+            # 必要時匿名化
+            clean_content = simple_anonymize(doc["content"], pii_check)
 
-    # 4. 保存結果 (JSON格式)
-    output_file = f"processed_docs_{int(time.time())}.json"
+            # 分塊
+            chunks = chunk_document(clean_content)
+
+            final_docs.append({
+                "metadata": metadata,
+                "content": clean_content,
+                "chunks": chunks,
+                "quality": quality,
+                "pii_info": pii_check
+            })
+
+    # 3. 保存結果
+    output_file = f"enterprise_knowledge_base_{int(time.time())}.json"
 
     with open(output_file, 'w', encoding='utf-8') as f:
-        import json
         json.dump({
-            "processing_summary": {
-                "total_files": results["total_files"],
-                "successful": results["successful"],
-                "usable": len(usable_docs),
-                "processing_time": results["processing_time"]
+            "summary": {
+                "total_processed": len(successful_docs),
+                "usable_documents": len(final_docs),
+                "total_chunks": sum(len(doc["chunks"]) for doc in final_docs),
+                "processing_date": time.strftime("%Y-%m-%d %H:%M:%S")
             },
-            "documents": usable_docs
+            "documents": final_docs
         }, f, ensure_ascii=False, indent=2, default=str)
 
-    print(f"📄 處理結果已保存到: {output_file}")
-    print(f"📊 可用文檔數量: {len(usable_docs)}")
+    print(f"✅ 完成! 可用文檔: {len(final_docs)}")
+    print(f"📄 結果保存在: {output_file}")
 
-    # 5. 簡單統計
-    if usable_docs:
-        avg_chunks = sum(len(doc["chunks"]) for doc in usable_docs) / len(usable_docs)
-        total_chunks = sum(len(doc["chunks"]) for doc in usable_docs)
+    return output_file
 
-        print(f"📈 總分塊數: {total_chunks}")
-        print(f"📊 平均每文檔分塊數: {avg_chunks:.1f}")
-
-        # 部門分佈
-        dept_dist = {}
-        for doc in usable_docs:
-            dept = doc["metadata"]["department"]
-            dept_dist[dept] = dept_dist.get(dept, 0) + 1
-
-        print("🏢 部門分佈:")
-        for dept, count in dept_dist.items():
-            print(f"  {dept}: {count} 個文檔")
-
+# 使用示例
 if __name__ == "__main__":
-    main()
+    import sys
+
+    if len(sys.argv) != 2:
+        print("用法: python doc_processor.py <文檔文件夾>")
+        print("例子: python doc_processor.py ./company_docs")
+        sys.exit(1)
+
+    output_file = process_all_documents(sys.argv[1])
+    print(f"🎉 知識庫準備完成: {output_file}")
 ```
 
 ### 5.2 快速驗證腳本
