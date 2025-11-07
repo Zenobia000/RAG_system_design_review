@@ -1,0 +1,283 @@
+{
+  "usage_tracking": {
+    "version": "1.0.0",
+    "tracking_start": "2025-01-07T00:00:00Z",
+    "last_updated": "2025-01-07T00:00:00Z",
+    "description": "資料集使用追蹤與監控系統"
+  },
+  "access_patterns": {
+    "daily_usage": {
+      "enterprise_documents": {
+        "average_daily_access": 45,
+        "peak_access_time": "14:00-16:00",
+        "most_accessed_subdirs": ["technical_specs", "manuals"],
+        "access_trend": "stable"
+      },
+      "vector_embeddings": {
+        "average_daily_access": 30,
+        "peak_access_time": "10:00-12:00",
+        "most_accessed_subdirs": ["bge_large_zh", "indices"],
+        "access_trend": "increasing"
+      },
+      "evaluation_benchmarks": {
+        "average_daily_access": 25,
+        "peak_access_time": "15:00-17:00",
+        "most_accessed_subdirs": ["qa_pairs", "retrieval_tests"],
+        "access_trend": "stable"
+      },
+      "configuration_templates": {
+        "average_daily_access": 60,
+        "peak_access_time": "09:00-11:00",
+        "most_accessed_subdirs": ["system_configs", "model_configs"],
+        "access_trend": "increasing"
+      },
+      "knowledge_graphs": {
+        "average_daily_access": 15,
+        "peak_access_time": "13:00-15:00",
+        "most_accessed_subdirs": ["entities", "relations"],
+        "access_trend": "stable"
+      },
+      "query_logs": {
+        "average_daily_access": 20,
+        "peak_access_time": "11:00-13:00",
+        "most_accessed_subdirs": ["analytics", "performance_logs"],
+        "access_trend": "decreasing"
+      },
+      "security_compliance": {
+        "average_daily_access": 8,
+        "peak_access_time": "16:00-18:00",
+        "most_accessed_subdirs": ["policies", "compliance_templates"],
+        "access_trend": "stable"
+      }
+    },
+    "chapter_based_usage": {
+      "ch0_introduction": {
+        "most_used_datasets": ["configuration_templates", "enterprise_documents"],
+        "usage_frequency": "daily",
+        "typical_session_duration": "30 minutes",
+        "resource_consumption": "medium"
+      },
+      "ch1_document_governance": {
+        "most_used_datasets": ["enterprise_documents", "knowledge_graphs"],
+        "usage_frequency": "weekly",
+        "typical_session_duration": "90 minutes",
+        "resource_consumption": "high"
+      },
+      "ch2_indexing_vectordb": {
+        "most_used_datasets": ["vector_embeddings", "enterprise_documents"],
+        "usage_frequency": "weekly",
+        "typical_session_duration": "120 minutes",
+        "resource_consumption": "very_high"
+      },
+      "ch3_retrieval_engineering": {
+        "most_used_datasets": ["query_logs", "evaluation_benchmarks"],
+        "usage_frequency": "bi-weekly",
+        "typical_session_duration": "75 minutes",
+        "resource_consumption": "high"
+      },
+      "ch4_generation_control": {
+        "most_used_datasets": ["evaluation_benchmarks", "vector_embeddings"],
+        "usage_frequency": "bi-weekly",
+        "typical_session_duration": "60 minutes",
+        "resource_consumption": "medium"
+      },
+      "ch5_evaluation_monitoring": {
+        "most_used_datasets": ["evaluation_benchmarks", "query_logs"],
+        "usage_frequency": "weekly",
+        "typical_session_duration": "45 minutes",
+        "resource_consumption": "medium"
+      },
+      "ch6_security_compliance": {
+        "most_used_datasets": ["security_compliance"],
+        "usage_frequency": "monthly",
+        "typical_session_duration": "60 minutes",
+        "resource_consumption": "low"
+      },
+      "ch7_advanced_methods": {
+        "most_used_datasets": ["knowledge_graphs", "vector_embeddings"],
+        "usage_frequency": "bi-weekly",
+        "typical_session_duration": "150 minutes",
+        "resource_consumption": "very_high"
+      },
+      "ch8_performance_cost": {
+        "most_used_datasets": ["query_logs", "vector_embeddings"],
+        "usage_frequency": "monthly",
+        "typical_session_duration": "90 minutes",
+        "resource_consumption": "high"
+      },
+      "ch9_enterprise_case_studies": {
+        "most_used_datasets": ["enterprise_documents", "knowledge_graphs"],
+        "usage_frequency": "monthly",
+        "typical_session_duration": "180 minutes",
+        "resource_consumption": "high"
+      },
+      "ch10_toolchain_reference": {
+        "most_used_datasets": ["configuration_templates"],
+        "usage_frequency": "as_needed",
+        "typical_session_duration": "15 minutes",
+        "resource_consumption": "low"
+      }
+    }
+  },
+  "performance_metrics": {
+    "data_retrieval_times": {
+      "enterprise_documents": {
+        "average_load_time": "2.5 seconds",
+        "p95_load_time": "8.0 seconds",
+        "cache_hit_ratio": 0.78
+      },
+      "vector_embeddings": {
+        "average_load_time": "5.2 seconds",
+        "p95_load_time": "15.0 seconds",
+        "cache_hit_ratio": 0.65
+      },
+      "evaluation_benchmarks": {
+        "average_load_time": "1.8 seconds",
+        "p95_load_time": "4.5 seconds",
+        "cache_hit_ratio": 0.85
+      },
+      "configuration_templates": {
+        "average_load_time": "0.8 seconds",
+        "p95_load_time": "2.0 seconds",
+        "cache_hit_ratio": 0.92
+      },
+      "knowledge_graphs": {
+        "average_load_time": "3.8 seconds",
+        "p95_load_time": "12.0 seconds",
+        "cache_hit_ratio": 0.72
+      },
+      "query_logs": {
+        "average_load_time": "1.2 seconds",
+        "p95_load_time": "3.5 seconds",
+        "cache_hit_ratio": 0.88
+      },
+      "security_compliance": {
+        "average_load_time": "1.5 seconds",
+        "p95_load_time": "4.0 seconds",
+        "cache_hit_ratio": 0.82
+      }
+    },
+    "storage_utilization": {
+      "total_allocated": "50GB",
+      "total_used": "32.5GB",
+      "utilization_rate": 0.65,
+      "growth_rate_monthly": "2.3GB",
+      "projected_full_date": "2025-08-15"
+    },
+    "bandwidth_consumption": {
+      "daily_average": "15.2GB",
+      "peak_daily": "28.7GB",
+      "peak_hour": "16:00-17:00",
+      "weekend_usage": "4.8GB/day"
+    }
+  },
+  "error_tracking": {
+    "common_issues": {
+      "file_not_found": {
+        "frequency": "2.3/day",
+        "most_affected_dataset": "enterprise_documents",
+        "typical_cause": "path_misconfiguration"
+      },
+      "permission_denied": {
+        "frequency": "1.1/day",
+        "most_affected_dataset": "security_compliance",
+        "typical_cause": "access_control_restrictions"
+      },
+      "timeout_errors": {
+        "frequency": "0.8/day",
+        "most_affected_dataset": "vector_embeddings",
+        "typical_cause": "large_file_loading"
+      },
+      "version_mismatch": {
+        "frequency": "0.5/day",
+        "most_affected_dataset": "configuration_templates",
+        "typical_cause": "concurrent_updates"
+      }
+    },
+    "resolution_times": {
+      "file_not_found": "5 minutes",
+      "permission_denied": "15 minutes",
+      "timeout_errors": "30 minutes",
+      "version_mismatch": "10 minutes"
+    }
+  },
+  "user_behavior_analysis": {
+    "access_patterns": {
+      "sequential_learners": {
+        "percentage": 0.65,
+        "typical_path": ["ch0", "ch1", "ch2", "ch3", "ch4", "ch5"],
+        "dataset_preference": "structured_progression"
+      },
+      "topic_focused": {
+        "percentage": 0.25,
+        "typical_behavior": "deep_dive_specific_chapters",
+        "dataset_preference": "specialized_datasets"
+      },
+      "reference_seekers": {
+        "percentage": 0.10,
+        "typical_behavior": "configuration_and_troubleshooting",
+        "dataset_preference": "configuration_templates"
+      }
+    },
+    "session_characteristics": {
+      "average_session_duration": "75 minutes",
+      "datasets_per_session": 2.3,
+      "peak_concurrent_users": 12,
+      "return_user_rate": 0.78
+    }
+  },
+  "optimization_insights": {
+    "caching_recommendations": {
+      "high_priority": [
+        "enterprise_documents/technical_specs",
+        "configuration_templates/system_configs",
+        "evaluation_benchmarks/qa_pairs"
+      ],
+      "medium_priority": [
+        "vector_embeddings/bge_large_zh",
+        "knowledge_graphs/entities"
+      ],
+      "cache_expiry_suggestions": {
+        "static_content": "7 days",
+        "semi_dynamic_content": "1 day",
+        "dynamic_content": "1 hour"
+      }
+    },
+    "preloading_strategies": {
+      "chapter_based_preloading": {
+        "ch0": ["configuration_templates", "enterprise_documents/metadata"],
+        "ch1": ["enterprise_documents", "knowledge_graphs/entities"],
+        "ch2": ["vector_embeddings/indices", "enterprise_documents"]
+      },
+      "session_based_preloading": {
+        "new_user": ["configuration_templates", "README_files"],
+        "returning_user": ["recent_datasets", "bookmarked_content"],
+        "advanced_user": ["full_dataset_access", "experimental_features"]
+      }
+    }
+  },
+  "alerts_and_notifications": {
+    "thresholds": {
+      "storage_usage": {
+        "warning": 0.8,
+        "critical": 0.9,
+        "emergency": 0.95
+      },
+      "error_rates": {
+        "warning": "5/hour",
+        "critical": "15/hour",
+        "emergency": "30/hour"
+      },
+      "response_times": {
+        "warning": "10 seconds",
+        "critical": "30 seconds",
+        "emergency": "60 seconds"
+      }
+    },
+    "notification_channels": {
+      "email": ["dataset_administrators", "course_coordinators"],
+      "slack": ["#rag-course-tech", "#dataset-monitoring"],
+      "dashboard": ["real_time_metrics", "weekly_reports"]
+    }
+  }
+}

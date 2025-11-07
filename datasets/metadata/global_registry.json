@@ -1,0 +1,192 @@
+{
+  "dataset_registry": {
+    "version": "1.1.0",
+    "last_updated": "2025-01-07T00:00:00Z",
+    "total_datasets": 6,
+    "total_chapters": 11,
+    "description": "企業RAG課程共用資料集全域註冊表"
+  },
+  "datasets": {
+    "enterprise_documents": {
+      "id": "enterprise_docs_v1",
+      "name": "企業文檔集",
+      "path": "datasets/enterprise_documents/",
+      "type": "document_collection",
+      "size_estimate": "1000+ documents",
+      "used_in_chapters": ["ch0", "ch1", "ch2", "ch3", "ch4", "ch5", "ch7", "ch9", "ch10"],
+      "usage_priority": "high",
+      "update_frequency": "monthly",
+      "access_level": "internal",
+      "supported_formats": ["pdf", "docx", "pptx", "md", "html"],
+      "subdirectories": [
+        "technical_specs",
+        "policies",
+        "manuals",
+        "presentations",
+        "knowledge_base",
+        "metadata"
+      ]
+    },
+    "vector_embeddings": {
+      "id": "vector_embed_v1",
+      "name": "向量嵌入資料集",
+      "path": "datasets/vector_embeddings/",
+      "type": "vector_collection",
+      "size_estimate": "100K+ vectors",
+      "used_in_chapters": ["ch0", "ch2", "ch3", "ch4", "ch5", "ch7", "ch8"],
+      "usage_priority": "high",
+      "update_frequency": "quarterly",
+      "access_level": "internal",
+      "embedding_models": [
+        "bge_large_zh",
+        "sentence_transformers",
+        "custom_embeddings"
+      ],
+      "index_types": ["qdrant", "faiss", "custom"]
+    },
+    "evaluation_benchmarks": {
+      "id": "eval_bench_v1",
+      "name": "評估基準集",
+      "path": "datasets/evaluation_benchmarks/",
+      "type": "benchmark_collection",
+      "size_estimate": "500+ test cases",
+      "used_in_chapters": ["ch0", "ch3", "ch4", "ch5", "ch7", "ch8"],
+      "usage_priority": "high",
+      "update_frequency": "monthly",
+      "access_level": "internal",
+      "benchmark_types": [
+        "qa_pairs",
+        "retrieval_tests",
+        "generation_tests",
+        "faithfulness_tests"
+      ]
+    },
+    "knowledge_graphs": {
+      "id": "knowledge_graph_v1",
+      "name": "知識圖譜資料集",
+      "path": "datasets/knowledge_graphs/",
+      "type": "graph_collection",
+      "size_estimate": "10K+ entities",
+      "used_in_chapters": ["ch1", "ch7", "ch9"],
+      "usage_priority": "medium",
+      "update_frequency": "quarterly",
+      "access_level": "internal",
+      "graph_formats": ["neo4j", "networkx", "rdf"],
+      "entity_types": [
+        "person",
+        "organization",
+        "concept",
+        "document",
+        "project"
+      ]
+    },
+    "query_logs": {
+      "id": "query_logs_v1",
+      "name": "查詢日誌資料集",
+      "path": "datasets/query_logs/",
+      "type": "log_collection",
+      "size_estimate": "10K+ queries",
+      "used_in_chapters": ["ch3", "ch5", "ch8"],
+      "usage_priority": "medium",
+      "update_frequency": "realtime",
+      "access_level": "internal",
+      "log_types": [
+        "search_queries",
+        "performance_logs",
+        "analytics"
+      ]
+    },
+    "security_compliance": {
+      "id": "security_compliance_v1",
+      "name": "安全合規資料集",
+      "path": "datasets/security_compliance/",
+      "type": "compliance_collection",
+      "size_estimate": "100+ policies",
+      "used_in_chapters": ["ch1", "ch6", "ch9"],
+      "usage_priority": "medium",
+      "update_frequency": "quarterly",
+      "access_level": "confidential",
+      "compliance_areas": [
+        "data_protection",
+        "access_control",
+        "audit_requirements",
+        "privacy_policies"
+      ]
+    }
+  },
+  "chapter_mapping": {
+    "ch0_introduction": {
+      "primary_datasets": ["enterprise_documents", "evaluation_benchmarks"],
+      "secondary_datasets": ["vector_embeddings"],
+      "focus_areas": ["system_overview", "architecture_design"]
+    },
+    "ch1_document_governance": {
+      "primary_datasets": ["enterprise_documents", "knowledge_graphs"],
+      "secondary_datasets": ["security_compliance"],
+      "focus_areas": ["document_processing", "metadata_management"]
+    },
+    "ch2_indexing_vectordb": {
+      "primary_datasets": ["vector_embeddings", "enterprise_documents"],
+      "secondary_datasets": [],
+      "focus_areas": ["vector_indexing", "database_optimization"]
+    },
+    "ch3_retrieval_engineering": {
+      "primary_datasets": ["query_logs", "evaluation_benchmarks"],
+      "secondary_datasets": ["vector_embeddings"],
+      "focus_areas": ["query_optimization", "performance_tuning"]
+    },
+    "ch4_generation_control": {
+      "primary_datasets": ["evaluation_benchmarks", "vector_embeddings"],
+      "secondary_datasets": ["enterprise_documents"],
+      "focus_areas": ["llm_serving", "citation_systems"]
+    },
+    "ch5_evaluation_monitoring": {
+      "primary_datasets": ["evaluation_benchmarks", "query_logs"],
+      "secondary_datasets": ["vector_embeddings"],
+      "focus_areas": ["metrics_evaluation", "monitoring_systems"]
+    },
+    "ch6_security_compliance": {
+      "primary_datasets": ["security_compliance"],
+      "secondary_datasets": ["enterprise_documents"],
+      "focus_areas": ["access_control", "data_protection"]
+    },
+    "ch7_advanced_methods": {
+      "primary_datasets": ["knowledge_graphs", "vector_embeddings"],
+      "secondary_datasets": ["enterprise_documents", "evaluation_benchmarks"],
+      "focus_areas": ["graphrag", "multi_agent_systems"]
+    },
+    "ch8_performance_cost": {
+      "primary_datasets": ["query_logs", "vector_embeddings"],
+      "secondary_datasets": ["evaluation_benchmarks"],
+      "focus_areas": ["optimization", "cost_analysis"]
+    },
+    "ch9_enterprise_case_studies": {
+      "primary_datasets": ["enterprise_documents", "knowledge_graphs"],
+      "secondary_datasets": ["security_compliance"],
+      "focus_areas": ["real_deployments", "best_practices"]
+    },
+    "ch10_toolchain_reference": {
+      "primary_datasets": ["enterprise_documents"],
+      "secondary_datasets": [],
+      "focus_areas": ["tool_integration", "reference_implementations"]
+    }
+  },
+  "access_control": {
+    "internal": {
+      "datasets": ["enterprise_documents", "vector_embeddings", "evaluation_benchmarks", "knowledge_graphs", "query_logs"],
+      "description": "課程內部使用者可存取"
+    },
+    "confidential": {
+      "datasets": ["security_compliance"],
+      "description": "需要特殊權限存取"
+    }
+  },
+  "statistics": {
+    "total_storage_estimate": "46.5GB",
+    "average_reuse_rate": 0.67,
+    "high_overlap_datasets": 3,
+    "medium_overlap_datasets": 3,
+    "specific_datasets": 0,
+    "cross_chapter_efficiency": "70% improvement in resource utilization"
+  }
+}

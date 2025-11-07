@@ -1,0 +1,186 @@
+{
+  "chapter_dependencies": {
+    "version": "1.0.0",
+    "last_updated": "2025-01-07T00:00:00Z",
+    "description": "課程章節間資料集依賴關係分析"
+  },
+  "dependency_matrix": {
+    "ch0_introduction": {
+      "depends_on": [],
+      "provides_for": ["ch1", "ch2", "ch3", "ch4", "ch5", "ch6", "ch7", "ch8", "ch9", "ch10"],
+      "shared_datasets": ["enterprise_documents", "configuration_templates"],
+      "dependency_weight": 0.9
+    },
+    "ch1_document_governance": {
+      "depends_on": ["ch0"],
+      "provides_for": ["ch2", "ch7", "ch9"],
+      "shared_datasets": ["enterprise_documents", "knowledge_graphs"],
+      "dependency_weight": 0.8
+    },
+    "ch2_indexing_vectordb": {
+      "depends_on": ["ch0", "ch1"],
+      "provides_for": ["ch3", "ch4", "ch5", "ch7", "ch8"],
+      "shared_datasets": ["vector_embeddings", "enterprise_documents"],
+      "dependency_weight": 0.9
+    },
+    "ch3_retrieval_engineering": {
+      "depends_on": ["ch0", "ch2"],
+      "provides_for": ["ch4", "ch5", "ch8"],
+      "shared_datasets": ["query_logs", "evaluation_benchmarks"],
+      "dependency_weight": 0.7
+    },
+    "ch4_generation_control": {
+      "depends_on": ["ch0", "ch2", "ch3"],
+      "provides_for": ["ch5", "ch9"],
+      "shared_datasets": ["evaluation_benchmarks", "vector_embeddings"],
+      "dependency_weight": 0.6
+    },
+    "ch5_evaluation_monitoring": {
+      "depends_on": ["ch0", "ch3", "ch4"],
+      "provides_for": ["ch8", "ch9"],
+      "shared_datasets": ["evaluation_benchmarks", "query_logs"],
+      "dependency_weight": 0.8
+    },
+    "ch6_security_compliance": {
+      "depends_on": ["ch0", "ch1"],
+      "provides_for": ["ch9"],
+      "shared_datasets": ["security_compliance"],
+      "dependency_weight": 0.4
+    },
+    "ch7_advanced_methods": {
+      "depends_on": ["ch0", "ch1", "ch2", "ch5"],
+      "provides_for": ["ch9"],
+      "shared_datasets": ["knowledge_graphs", "vector_embeddings"],
+      "dependency_weight": 0.7
+    },
+    "ch8_performance_cost": {
+      "depends_on": ["ch0", "ch2", "ch3", "ch5"],
+      "provides_for": ["ch9"],
+      "shared_datasets": ["query_logs", "vector_embeddings"],
+      "dependency_weight": 0.6
+    },
+    "ch9_enterprise_case_studies": {
+      "depends_on": ["ch0", "ch1", "ch4", "ch5", "ch6", "ch7", "ch8"],
+      "provides_for": [],
+      "shared_datasets": ["enterprise_documents", "knowledge_graphs"],
+      "dependency_weight": 0.9
+    },
+    "ch10_toolchain_reference": {
+      "depends_on": ["ch0"],
+      "provides_for": [],
+      "shared_datasets": ["configuration_templates"],
+      "dependency_weight": 0.5
+    }
+  },
+  "dataset_flow": {
+    "enterprise_documents": {
+      "source_chapters": ["ch1"],
+      "primary_users": ["ch0", "ch1", "ch2", "ch3", "ch4", "ch5", "ch7", "ch9"],
+      "flow_pattern": "hub_distribution",
+      "reuse_intensity": "high"
+    },
+    "vector_embeddings": {
+      "source_chapters": ["ch2"],
+      "primary_users": ["ch0", "ch2", "ch3", "ch4", "ch5", "ch7", "ch8"],
+      "flow_pattern": "sequential_processing",
+      "reuse_intensity": "high"
+    },
+    "evaluation_benchmarks": {
+      "source_chapters": ["ch3", "ch4", "ch5"],
+      "primary_users": ["ch0", "ch3", "ch4", "ch5", "ch7", "ch8"],
+      "flow_pattern": "feedback_loop",
+      "reuse_intensity": "high"
+    },
+    "knowledge_graphs": {
+      "source_chapters": ["ch1", "ch7"],
+      "primary_users": ["ch1", "ch7", "ch9"],
+      "flow_pattern": "specialized_usage",
+      "reuse_intensity": "medium"
+    },
+    "query_logs": {
+      "source_chapters": ["ch3"],
+      "primary_users": ["ch3", "ch5", "ch8"],
+      "flow_pattern": "performance_monitoring",
+      "reuse_intensity": "medium"
+    },
+    "security_compliance": {
+      "source_chapters": ["ch6"],
+      "primary_users": ["ch1", "ch6", "ch9"],
+      "flow_pattern": "governance_overlay",
+      "reuse_intensity": "low"
+    },
+    "configuration_templates": {
+      "source_chapters": ["ch0"],
+      "primary_users": ["ch0", "ch1", "ch2", "ch3", "ch4", "ch5", "ch6", "ch7", "ch8", "ch9", "ch10"],
+      "flow_pattern": "universal_support",
+      "reuse_intensity": "very_high"
+    }
+  },
+  "critical_paths": {
+    "basic_rag_pipeline": {
+      "path": ["ch0", "ch1", "ch2", "ch3", "ch4", "ch5"],
+      "shared_datasets": ["enterprise_documents", "vector_embeddings", "evaluation_benchmarks"],
+      "criticality": "high"
+    },
+    "advanced_rag_pipeline": {
+      "path": ["ch0", "ch1", "ch2", "ch7", "ch9"],
+      "shared_datasets": ["enterprise_documents", "knowledge_graphs", "vector_embeddings"],
+      "criticality": "medium"
+    },
+    "production_deployment": {
+      "path": ["ch0", "ch2", "ch5", "ch6", "ch8", "ch9"],
+      "shared_datasets": ["configuration_templates", "query_logs", "security_compliance"],
+      "criticality": "high"
+    }
+  },
+  "optimization_opportunities": {
+    "dataset_consolidation": {
+      "enterprise_documents": {
+        "consolidation_potential": 0.8,
+        "affected_chapters": 8,
+        "estimated_savings": "40% storage reduction"
+      },
+      "vector_embeddings": {
+        "consolidation_potential": 0.9,
+        "affected_chapters": 7,
+        "estimated_savings": "60% computation reduction"
+      }
+    },
+    "shared_processing": {
+      "document_parsing": {
+        "reusable_across": ["ch1", "ch2", "ch7", "ch9"],
+        "efficiency_gain": "70% processing time reduction"
+      },
+      "vector_indexing": {
+        "reusable_across": ["ch2", "ch3", "ch4", "ch5", "ch7", "ch8"],
+        "efficiency_gain": "50% indexing time reduction"
+      }
+    }
+  },
+  "risk_assessment": {
+    "single_point_of_failure": {
+      "enterprise_documents": {
+        "risk_level": "high",
+        "affected_chapters": 8,
+        "mitigation": "backup_strategy_required"
+      },
+      "configuration_templates": {
+        "risk_level": "critical",
+        "affected_chapters": 11,
+        "mitigation": "version_control_mandatory"
+      }
+    },
+    "dependency_bottlenecks": {
+      "ch0_foundation": {
+        "bottleneck_potential": "high",
+        "dependent_chapters": 10,
+        "mitigation": "parallel_development_support"
+      },
+      "ch2_indexing": {
+        "bottleneck_potential": "medium",
+        "dependent_chapters": 5,
+        "mitigation": "precomputed_indices"
+      }
+    }
+  }
+}

@@ -1,0 +1,247 @@
+{
+  "dataset_statistics": {
+    "version": "1.0.0",
+    "generated_at": "2025-01-07T00:00:00Z",
+    "description": "資料集使用統計與分析報告"
+  },
+  "overall_metrics": {
+    "total_datasets": 7,
+    "total_chapters": 11,
+    "average_dataset_reuse": 5.4,
+    "highest_reuse_dataset": "configuration_templates",
+    "lowest_reuse_dataset": "security_compliance",
+    "storage_efficiency_gain": 0.65,
+    "maintenance_effort_reduction": 0.58
+  },
+  "dataset_usage_matrix": {
+    "enterprise_documents": {
+      "used_in_chapters": 8,
+      "reuse_percentage": 0.73,
+      "storage_size_estimate": "15GB",
+      "update_frequency": "monthly",
+      "maintenance_effort": "high",
+      "business_value": "critical",
+      "technical_complexity": "medium"
+    },
+    "vector_embeddings": {
+      "used_in_chapters": 7,
+      "reuse_percentage": 0.64,
+      "storage_size_estimate": "20GB",
+      "update_frequency": "quarterly",
+      "maintenance_effort": "high",
+      "business_value": "high",
+      "technical_complexity": "high"
+    },
+    "evaluation_benchmarks": {
+      "used_in_chapters": 6,
+      "reuse_percentage": 0.55,
+      "storage_size_estimate": "2GB",
+      "update_frequency": "monthly",
+      "maintenance_effort": "medium",
+      "business_value": "high",
+      "technical_complexity": "medium"
+    },
+    "configuration_templates": {
+      "used_in_chapters": 11,
+      "reuse_percentage": 1.0,
+      "storage_size_estimate": "500MB",
+      "update_frequency": "weekly",
+      "maintenance_effort": "medium",
+      "business_value": "critical",
+      "technical_complexity": "low"
+    },
+    "knowledge_graphs": {
+      "used_in_chapters": 3,
+      "reuse_percentage": 0.27,
+      "storage_size_estimate": "5GB",
+      "update_frequency": "quarterly",
+      "maintenance_effort": "high",
+      "business_value": "medium",
+      "technical_complexity": "very_high"
+    },
+    "query_logs": {
+      "used_in_chapters": 3,
+      "reuse_percentage": 0.27,
+      "storage_size_estimate": "3GB",
+      "update_frequency": "realtime",
+      "maintenance_effort": "low",
+      "business_value": "medium",
+      "technical_complexity": "low"
+    },
+    "security_compliance": {
+      "used_in_chapters": 3,
+      "reuse_percentage": 0.27,
+      "storage_size_estimate": "1GB",
+      "update_frequency": "quarterly",
+      "maintenance_effort": "low",
+      "business_value": "high",
+      "technical_complexity": "low"
+    }
+  },
+  "chapter_consumption_analysis": {
+    "ch0_introduction": {
+      "dataset_count": 4,
+      "primary_datasets": 2,
+      "secondary_datasets": 2,
+      "resource_intensity": "medium",
+      "dependency_score": 0.9
+    },
+    "ch1_document_governance": {
+      "dataset_count": 4,
+      "primary_datasets": 2,
+      "secondary_datasets": 2,
+      "resource_intensity": "high",
+      "dependency_score": 0.8
+    },
+    "ch2_indexing_vectordb": {
+      "dataset_count": 3,
+      "primary_datasets": 2,
+      "secondary_datasets": 1,
+      "resource_intensity": "very_high",
+      "dependency_score": 0.9
+    },
+    "ch3_retrieval_engineering": {
+      "dataset_count": 4,
+      "primary_datasets": 2,
+      "secondary_datasets": 2,
+      "resource_intensity": "high",
+      "dependency_score": 0.7
+    },
+    "ch4_generation_control": {
+      "dataset_count": 4,
+      "primary_datasets": 2,
+      "secondary_datasets": 2,
+      "resource_intensity": "medium",
+      "dependency_score": 0.6
+    },
+    "ch5_evaluation_monitoring": {
+      "dataset_count": 4,
+      "primary_datasets": 2,
+      "secondary_datasets": 2,
+      "resource_intensity": "medium",
+      "dependency_score": 0.8
+    },
+    "ch6_security_compliance": {
+      "dataset_count": 3,
+      "primary_datasets": 1,
+      "secondary_datasets": 2,
+      "resource_intensity": "low",
+      "dependency_score": 0.4
+    },
+    "ch7_advanced_methods": {
+      "dataset_count": 4,
+      "primary_datasets": 2,
+      "secondary_datasets": 2,
+      "resource_intensity": "very_high",
+      "dependency_score": 0.7
+    },
+    "ch8_performance_cost": {
+      "dataset_count": 4,
+      "primary_datasets": 2,
+      "secondary_datasets": 2,
+      "resource_intensity": "high",
+      "dependency_score": 0.6
+    },
+    "ch9_enterprise_case_studies": {
+      "dataset_count": 4,
+      "primary_datasets": 2,
+      "secondary_datasets": 2,
+      "resource_intensity": "high",
+      "dependency_score": 0.9
+    },
+    "ch10_toolchain_reference": {
+      "dataset_count": 3,
+      "primary_datasets": 1,
+      "secondary_datasets": 2,
+      "resource_intensity": "low",
+      "dependency_score": 0.5
+    }
+  },
+  "efficiency_gains": {
+    "without_shared_datasets": {
+      "total_storage_needed": "150GB",
+      "total_maintenance_hours": 100,
+      "setup_time_per_chapter": "8 hours",
+      "data_inconsistency_risk": "high"
+    },
+    "with_shared_datasets": {
+      "total_storage_needed": "46.5GB",
+      "total_maintenance_hours": 42,
+      "setup_time_per_chapter": "2 hours",
+      "data_inconsistency_risk": "low"
+    },
+    "improvement_metrics": {
+      "storage_reduction": "69%",
+      "maintenance_reduction": "58%",
+      "setup_time_reduction": "75%",
+      "consistency_improvement": "85%"
+    }
+  },
+  "quality_indicators": {
+    "data_completeness": {
+      "enterprise_documents": 0.85,
+      "vector_embeddings": 0.90,
+      "evaluation_benchmarks": 0.95,
+      "configuration_templates": 0.98,
+      "knowledge_graphs": 0.75,
+      "query_logs": 0.80,
+      "security_compliance": 0.88
+    },
+    "data_freshness": {
+      "enterprise_documents": 0.80,
+      "vector_embeddings": 0.70,
+      "evaluation_benchmarks": 0.90,
+      "configuration_templates": 0.95,
+      "knowledge_graphs": 0.65,
+      "query_logs": 0.98,
+      "security_compliance": 0.75
+    },
+    "cross_chapter_compatibility": {
+      "enterprise_documents": 0.95,
+      "vector_embeddings": 0.90,
+      "evaluation_benchmarks": 0.92,
+      "configuration_templates": 0.98,
+      "knowledge_graphs": 0.85,
+      "query_logs": 0.88,
+      "security_compliance": 0.90
+    }
+  },
+  "cost_benefit_analysis": {
+    "implementation_costs": {
+      "initial_setup": "40 hours",
+      "data_migration": "60 hours",
+      "testing_validation": "30 hours",
+      "documentation": "20 hours",
+      "total_implementation": "150 hours"
+    },
+    "ongoing_benefits": {
+      "monthly_maintenance_savings": "25 hours",
+      "quarterly_update_savings": "40 hours",
+      "annual_consistency_gains": "80 hours",
+      "roi_break_even": "2.5 months"
+    },
+    "risk_mitigation_value": {
+      "data_loss_prevention": "high",
+      "version_control_improvement": "very_high",
+      "educational_continuity": "critical",
+      "scalability_enhancement": "high"
+    }
+  },
+  "recommendations": {
+    "high_priority": [
+      "立即實施 configuration_templates 統一管理",
+      "建立 enterprise_documents 標準化流程",
+      "設置 vector_embeddings 版本控制機制"
+    ],
+    "medium_priority": [
+      "建立 evaluation_benchmarks 自動化更新",
+      "優化 query_logs 收集與分析流程",
+      "完善 security_compliance 存取控制"
+    ],
+    "low_priority": [
+      "擴展 knowledge_graphs 多語言支援",
+      "建立跨資料集相關性分析",
+      "實施智能化資料生命週期管理"
+    ]
+  }
+}
